@@ -1,0 +1,5 @@
+# Pinned below 2.0.0: the mcp SDK's 2.0.0 release renamed
+# mcp.server.fastmcp.FastMCP -> mcp.server.mcpserver.MCPServer.
+# mcp_server.py in this repo uses the FastMCP API (matching UEFN Toolbelt's
+# own mcp_server.py), which is stable across the 1.x line.
+mcp>=1.0.0,<2.0.0

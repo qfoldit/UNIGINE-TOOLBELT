@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-08-02",
+  "description": "qFoldIT Toolbelt for UNIGINE 2 / UNIGINE 2 Sim — plugin registry. Format mirrors UEFN Toolbelt's registry.json.",
+  "engine": "unigine2",
+  "supported_editions": ["UNIGINE 2 Community Edition", "UNIGINE 2 Engineering", "UNIGINE 2 Entertainment", "UNIGINE 2 Sim", "UNIGINE 2 Academic"],
+  "transport": "external mcp_server.py (stdio) -> HTTP 127.0.0.1:8766 -> ToolbeltListener.cs (in-Editor). Companion to, not a replacement for, UNIGINE's official MCPBridge Plugin.",
+  "plugins": [
+    {
+      "id": "scene_tools",
+      "name": "Scene Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world.",
+      "category": "Scene",
+      "file": "editor_plugin/Tools/SceneTools.cs",
+      "tool_count": 7,
+      "tools": ["spawn_primitive", "transform_node", "clone_node", "delete_node", "parent_node", "world_list_nodes", "world_find_by_name"]
+    },
+    {
+      "id": "material_tools",
+      "name": "Material Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "12 material presets, bulk swap by name match, team-color split, preset listing.",
+      "category": "Materials",
+      "file": "editor_plugin/Tools/MaterialTools.cs",
+      "tool_count": 4,
+      "tools": ["material_apply_preset", "material_bulk_swap", "material_team_color_split", "material_list_presets"]
+    },
+    {
+      "id": "procedural_placement",
+      "name": "Procedural Placement & Arena",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "8 geometric placement patterns (grid, circle, arc, spiral, line, wave, helix, radial) plus a symmetrical arena generator.",
+      "category": "Procedural",
+      "file": "editor_plugin/Tools/ProceduralPlacementTools.cs",
+      "tool_count": 2,
+      "tools": ["procedural_place", "arena_generate"]
+    },
+    {
+      "id": "stamp_tools",
+      "name": "Stamp Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Save a selection as a reusable stamp; place it anywhere with rotation; list saved stamps.",
+      "category": "Stamps",
+      "file": "editor_plugin/Tools/StampTools.cs",
+      "tool_count": 3,
+      "tools": ["stamp_save", "stamp_place", "stamp_list"]
+    },
+    {
+      "id": "project_setup",
+      "name": "Project Setup",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Standard folder scaffold plus a boilerplate GameManager WorldLogic class.",
+      "category": "Project",
+      "file": "editor_plugin/Tools/ProjectSetupTools.cs",
+      "tool_count": 1,
+      "tools": ["project_setup"]
+    },
+    {
+      "id": "world_state_export",
+      "name": "World State Export",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Exports the full world node graph (names, types, transforms, parents) to JSON for AI context.",
+      "category": "WorldState",
+      "file": "editor_plugin/Tools/WorldStateExportTools.cs",
+      "tool_count": 1,
+      "tools": ["world_state_export"]
+    },
+    {
+      "id": "codegen_tools",
+      "name": "CodeGen Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Generates a WorldLogic component with real, bindable node references for named world nodes.",
+      "category": "CodeGen",
+      "file": "editor_plugin/Tools/NodeCodeGenTools.cs",
+      "tool_count": 1,
+      "tools": ["codegen_node_component"]
+    },
+    {
+      "id": "asset_tools",
+      "name": "Asset Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "List, instantiate, and find project .node/.mesh/.mat assets by extension and name.",
+      "category": "Assets",
+      "file": "editor_plugin/Tools/AssetTools.cs",
+      "tool_count": 3,
+      "tools": ["asset_list", "asset_instantiate_node", "asset_find_by_extension"]
+    },
+    {
+      "id": "console_tools",
+      "name": "Console & Build Tools",
+      "version": "0.1.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Run console commands, read console variables, save the world.",
+      "category": "BuildConsole",
+      "file": "editor_plugin/Tools/ConsoleTools.cs",
+      "tool_count": 3,
+      "tools": ["console_run_command", "console_get_variable", "world_save"]
+    }
+  ]
+}
