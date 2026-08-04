@@ -124,5 +124,38 @@ namespace QFoldIT.Toolbelt
                 Walk(World.GetChild(i));
             return result.ToArray();
         }
+
+        public static Node CreateLight(string lightType, double x, double y, double z, float r, float g, float b, float intensity, string name = null)
+        {
+            // Unigine has distinct light node classes rather than one Light
+            // type with an enum, unlike Unity. Map the requested type to the
+            // matching class. Verify exact constructor signatures for your
+            // SDK version (some take a radius/cutoff argument directly).
+            Node light = lightType.ToLowerInvariant() switch
+            {
+                "directional" or "world" or "sun" => new LightWorld(),
+                "point" or "omni" => new LightOmni(1.0f),
+                "spot" => new LightProj(new Unigine.Math.mat4(), Materials.FindMaterial("light_proj")),
+                _ => new LightOmni(1.0f),
+            };
+
+            SetWorldPosition(light, x, y, z);
+            if (light is LightOmni lo) { lo.Color = new Unigine.Math.vec4(r, g, b, 1f); }
+            if (light is LightWorld lw) { lw.Color = new Unigine.Math.vec4(r, g, b, 1f); }
+            if (!string.IsNullOrEmpty(name)) light.Name = name;
+
+            World.AddChild(light);
+            return light;
+        }
+
+        /// <summary>
+        /// Lightweight persisted key/value store used by TagsLayersTools and
+        /// StampTools for data UNIGINE has no first-class manager for
+        /// (arbitrary string tags, in particular). Backed by a JSON file
+        /// under Saved/QFoldIT_Toolbelt/ so it survives Editor restarts.
+        /// </summary>
+        public static string SavedDataDir =>
+            System.IO.Path.Combine(Engine.Get().GetSourceDataPath() ?? ".", "Saved", "QFoldIT_Toolbelt");
     }
 }
+

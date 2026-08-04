@@ -73,10 +73,10 @@ qfoldit-unigine-toolbelt/
 ├── mcp_server.py                  external stdio↔HTTP MCP bridge
 ├── requirements.txt
 ├── editor_plugin/
-│   ├── ToolbeltBootstrap.cs       WorldLogic entry point: starts + pumps the listener
+│   ├── ToolbeltBootstrap.cs       WorldLogic entry point: starts + pumps the listener, applies camera follow
 │   ├── ToolbeltListener.cs        HTTP transport, main-thread dispatch queue (engine-agnostic)
 │   ├── ToolRegistry.cs            name -> handler dispatch table
-│   ├── UnigineCompat.cs           ⚠ the ONE file with direct Unigine.* API calls
+│   ├── UnigineCompat.cs           ⚠ the file with direct Unigine.* API calls for core node/material/transform ops
 │   └── Tools/
 │       ├── SceneTools.cs          spawn/transform/clone/delete/parent/list/find
 │       ├── MaterialTools.cs       presets, bulk swap, team-color split
@@ -85,8 +85,21 @@ qfoldit-unigine-toolbelt/
 │       ├── ProjectSetupTools.cs   folder scaffold + GameManager boilerplate
 │       ├── WorldStateExportTools.cs      world node graph → JSON
 │       ├── NodeCodeGenTools.cs    WorldLogic component wired to real nodes
-│       ├── AssetTools.cs          list/instantiate/find project assets
-│       └── ConsoleTools.cs        console commands, variables, world save
+│       ├── AssetTools.cs         list/instantiate/find project assets
+│       ├── ConsoleTools.cs       console commands, variables, world save
+│       ├── LightingTools.cs      lights, environment/fog, GI reload, presets
+│       ├── PhysicsTools.cs       rigid bodies, shapes, materials, raycasts, gravity
+│       ├── UITools.cs            Widget-based buttons/labels/panels/sliders
+│       ├── AudioTools.cs         ObjectSound source, one-shots, listener, volume
+│       ├── CameraTools.cs        Player/camera creation, follow, clipping, FOV, screenshots
+│       ├── ParticleTools.cs      ObjectParticles spawn/emission/color/stop
+│       ├── NavigationTools.cs    NavigationMesh bake, agents, obstacles, destinations
+│       ├── NodeWorkflowTools.cs  .node save/reload/variant/XML export (prefab-equivalent)
+│       ├── ComponentTools.cs     reflection-based generic C# Component add/remove/get/set/list
+│       ├── TagsLayersTools.cs    free-text tags + IntersectionMask-backed layers
+│       ├── WorldManagementTools.cs   new/load/save-as/reload/info for the active world
+│       ├── MeasurementTools.cs   distance, per-node bounds, world bounds
+│       └── UtilityTools.cs       batch rename, engine/world info
 ├── docs/TOOL_REFERENCE.md
 ├── registry.json                  plugin manifest (mirrors UEFN Toolbelt's format)
 └── tests/                         mcp_server.py contract tests (no live Editor required)
@@ -120,9 +133,11 @@ Rules kept consistent across all tool files:
 - **One tool per capability, not per variant** — `procedural_place` takes
   a `pattern` string instead of eight separate tools, matching both the
   Unity toolbelt and UEFN Toolbelt's `Prop Patterns` design.
-- **All direct engine API calls go through `UnigineCompat.cs`** — this is
-  the load-bearing convention for this repo specifically, since it is the
-  one file that needs re-verifying per SDK version.
+- **Shared node/material/transform operations go through `UnigineCompat.cs`**
+  where practical; tool files with a single-use engine API (Lighting, Physics,
+  UI, Audio, Navigation, etc.) call `Unigine.*` directly but each carries its
+  own `⚠` comment block flagging exactly which calls to re-verify per SDK
+  version — see the "Before you build" section in README.md.
 
 ## Extending the toolbelt
 

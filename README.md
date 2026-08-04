@@ -1,6 +1,6 @@
 # qFoldIT Toolbelt — UNIGINE 2 / UNIGINE 2 Sim
 
-**25 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
+**80 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
 
 > Built by **qFoldIT** — foundation release, 2026
 
@@ -61,17 +61,22 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design and
 
 ## ⚠ Before you build
 
-`editor_plugin/UnigineCompat.cs` is the **only** file that calls
-`Unigine.*` types directly for node/material/transform operations. Its
-method bodies reflect the commonly documented UnigineSharp shape for the
-2.20/2.21 line (matching what MCPBridge Plugin lists as its supported
-SDK), but exact property vs. method access, primitive mesh asset paths,
-and the Editor selection API **do vary between SDK versions and were not
-compiled or run against a live UNIGINE installation to produce this
-repository**. Check each call against **Help → API Documentation** in your
-SDK Browser before relying on this in a real project — see the comments at
-the top of `UnigineCompat.cs` and `StampTools.cs` for the specific calls
-most likely to need adjustment.
+None of this repository's `Unigine.*` calls were compiled or run against a
+live UNIGINE installation — this was written without access to the SDK.
+Exact property vs. method access, primitive mesh asset paths, widget
+constructor signatures, and physics/navigation type availability **do vary
+between SDK versions**. Check each call against **Help → API
+Documentation** in your SDK Browser (targeting 2.20/2.21, matching what
+MCPBridge Plugin lists as supported) before relying on this in a real
+project.
+
+`editor_plugin/UnigineCompat.cs` holds the core node/material/transform
+operations shared across every tool file. The expanded tool set added in
+this release (Lighting, Physics, UI, Audio, Camera, Particles, Navigation,
+Components, etc.) calls `Unigine.*` more directly where a shared helper
+didn't make sense for a single-use API — each of those files carries its
+own `⚠` comment block at the top calling out exactly which calls are most
+likely to need adjusting.
 
 ## Install
 
@@ -102,26 +107,46 @@ most likely to need adjustment.
    then connect your MCP client. Call `list_toolbelt_tools` to confirm the
    handshake.
 
-## Tool categories (25 tools total)
+## Tool categories (80 tools total)
 
-| Category     | Tools | What it covers |
-|--------------|:-----:|-----------------|
-| Scene        | 7 | spawn, transform, clone, delete, parent, list, find nodes |
-| Materials    | 4 | 12 presets, bulk swap, team-color split, list presets |
-| Procedural   | 2 | 8-pattern placement, symmetrical arena generator |
-| Stamps       | 3 | save/place/list reusable node groups |
-| Project      | 1 | folder scaffold + boilerplate GameManager WorldLogic |
-| WorldState   | 1 | full world node graph → JSON for AI context |
-| CodeGen      | 1 | WorldLogic component wired to real world nodes |
-| Assets       | 3 | list / instantiate / find .node & other project assets |
-| BuildConsole | 3 | run console commands, read variables, save world |
+| Category | Tools | What it covers |
+|----------|:-----:|-----------------|
+| Assets | 3 | List, instantiate, and find project .node/.mesh/.mat assets by extension and name. |
+| Audio | 4 | ObjectSound source setup, one-shot playback, listener node, volume control. |
+| Camera | 5 | Player/camera creation, dependency-free follow, clipping, FOV, screenshots. |
+| Components | 5 | Reflection-based generic add/remove/get/set/list for C# Components. |
+| BuildConsole | 3 | Run console commands, read console variables, save the world. |
+| Lighting | 5 | Create lights, set environment/fog, trigger GI reload, apply full lighting presets. |
+| Materials | 4 | 12 material presets, bulk swap by name match, team-color split, preset listing. |
+| Measurement | 3 | Distance between nodes, per-node bounds, full-world bounds. |
+| Navigation | 4 | NavigationMesh bake, agents, obstacles, runtime destinations (Navigation add-on). |
+| CodeGen | 1 | Generates a WorldLogic component with real, bindable node references for named world nodes. |
+| NodeWorkflow | 4 | Save/reload/variant/XML-export workflow for .node assets — UNIGINE's prefab-equivalent. |
+| Particles | 4 | ObjectParticles spawning from assets, emission rate, color, stop control. |
+| Physics | 5 | Rigid bodies, collision shapes, physics materials, raycasts, global gravity. |
+| Procedural | 2 | 8 geometric placement patterns (grid, circle, arc, spiral, line, wave, helix, radial) plus a symmetrical arena generator. |
+| Project | 1 | Standard folder scaffold plus a boilerplate GameManager WorldLogic class. |
+| Scene | 7 | Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world. |
+| Stamps | 3 | Save a selection as a reusable stamp; place it anywhere with rotation; list saved stamps. |
+| TagsLayers | 4 | Free-text tag registry plus real IntersectionMask-backed named layers. |
+| UI | 5 | Widget-based UI: buttons, labels, panels, sliders, tracked by a lightweight name registry. |
+| Utility | 2 | Batch rename and basic Engine/world info reporting. |
+| WorldManagement | 5 | New/load/save-as/reload/info for the single active world. |
+| WorldState | 1 | Exports the full world node graph (names, types, transforms, parents) to JSON for AI context. |
 
 ## Roadmap to parity
 
-This is a **foundation release** — 25 real tools, not 355 or MCPBridge's
-27. Structured to grow the same way UEFN Toolbelt's did: new files under
+This release brings the toolbelt to **80 real tools** across 22 categories
+— still short of UEFN Toolbelt's 355 and well beyond MCPBridge's 27, but a
+large step up from the initial 25-tool foundation release. Structured to
+keep growing the same way UEFN Toolbelt's did: new files under
 `editor_plugin/Tools/`, each calling `ToolRegistry.Register(...)` for a
 handful of new tools, tracked in `registry.json`.
+
+Categories most likely to need SDK-version adjustment before production
+use (see the ⚠ notes at the top of each file): Physics, Navigation,
+Animation-adjacent (Particles), UI (Widget API), and Components (C#
+component system availability varies by SDK version).
 
 ## License
 

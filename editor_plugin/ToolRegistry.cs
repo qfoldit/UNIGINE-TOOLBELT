@@ -86,6 +86,19 @@ namespace QFoldIT.Toolbelt
             NodeCodeGenTools.Register();
             AssetTools.Register();
             ConsoleTools.Register();
+            LightingTools.Register();
+            PhysicsTools.Register();
+            UITools.Register();
+            AudioTools.Register();
+            CameraTools.Register();
+            ParticleTools.Register();
+            NavigationTools.Register();
+            NodeWorkflowTools.Register();
+            ComponentTools.Register();
+            TagsLayersTools.Register();
+            WorldManagementTools.Register();
+            MeasurementTools.Register();
+            UtilityTools.Register();
         }
     }
 }

@@ -34,7 +34,28 @@ namespace QFoldIT.Toolbelt
         public override int Update()
         {
             _listener?.PumpMainThread();
+            ApplyCameraFollow();
             return 1;
+        }
+
+        /// <summary>
+        /// Applies the lightweight camera_set_follow registry from
+        /// CameraTools.cs — a lerp toward target + offset, similar in
+        /// spirit to qFoldITCameraFollow in the Unity toolbelt.
+        /// </summary>
+        private void ApplyCameraFollow()
+        {
+            foreach (var entry in new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, (string target, Unigine.Math.dvec3 offset)>>(CameraTools.FollowRegistry))
+            {
+                var camNode = UnigineCompat.FindNodeByName(entry.Key);
+                var targetNode = UnigineCompat.FindNodeByName(entry.Value.target);
+                if (camNode == null || targetNode == null) continue;
+
+                var desired = targetNode.WorldPosition + entry.Value.offset;
+                var current = camNode.WorldPosition;
+                var smoothed = Unigine.Math.dvec3.Lerp(current, desired, 0.15);
+                UnigineCompat.SetWorldPosition(camNode, smoothed.x, smoothed.y, smoothed.z);
+            }
         }
 
         public override int Shutdown()
