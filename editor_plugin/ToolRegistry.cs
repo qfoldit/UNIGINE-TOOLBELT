@@ -99,6 +99,7 @@ namespace QFoldIT.Toolbelt
             WorldManagementTools.Register();
             MeasurementTools.Register();
             UtilityTools.Register();
+            UAGBridgeTools.Register();
         }
     }
 }

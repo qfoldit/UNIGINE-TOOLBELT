@@ -1,6 +1,6 @@
 # qFoldIT Toolbelt — UNIGINE 2 / UNIGINE 2 Sim
 
-**80 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
+**84 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
 
 > Built by **qFoldIT** — foundation release, 2026
 
@@ -107,7 +107,7 @@ likely to need adjusting.
    then connect your MCP client. Call `list_toolbelt_tools` to confirm the
    handshake.
 
-## Tool categories (80 tools total)
+## Tool categories (84 tools total)
 
 | Category | Tools | What it covers |
 |----------|:-----:|-----------------|
@@ -123,12 +123,13 @@ likely to need adjusting.
 | CodeGen | 1 | Generates a WorldLogic component with real, bindable node references for named world nodes. |
 | NodeWorkflow | 4 | Save/reload/variant/XML-export workflow for .node assets — UNIGINE's prefab-equivalent. |
 | Particles | 4 | ObjectParticles spawning from assets, emission rate, color, stop control. |
-| Physics | 5 | Rigid bodies, collision shapes, physics materials, raycasts, global gravity. |
+| Physics | 6 | Rigid bodies, collision shapes, physics materials, raycasts, global gravity. |
 | Procedural | 2 | 8 geometric placement patterns (grid, circle, arc, spiral, line, wave, helix, radial) plus a symmetrical arena generator. |
 | Project | 1 | Standard folder scaffold plus a boilerplate GameManager WorldLogic class. |
-| Scene | 7 | Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world. |
+| Scene | 8 | Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world. |
 | Stamps | 3 | Save a selection as a reusable stamp; place it anywhere with rotation; list saved stamps. |
 | TagsLayers | 4 | Free-text tag registry plus real IntersectionMask-backed named layers. |
+| UAGBridge | 2 | Validates and realizes qFoldIT Universal Assembly Graphs by dispatching to this toolbelt's own registered tools — the Universal World Interface adapter connecting UNIGINE 2 to the rest of the qFoldIT stack. |
 | UI | 5 | Widget-based UI: buttons, labels, panels, sliders, tracked by a lightweight name registry. |
 | Utility | 2 | Batch rename and basic Engine/world info reporting. |
 | WorldManagement | 5 | New/load/save-as/reload/info for the single active world. |
@@ -136,12 +137,19 @@ likely to need adjusting.
 
 ## Roadmap to parity
 
-This release brings the toolbelt to **80 real tools** across 22 categories
+This release brings the toolbelt to **84 real tools** across 23 categories
 — still short of UEFN Toolbelt's 355 and well beyond MCPBridge's 27, but a
-large step up from the initial 25-tool foundation release. Structured to
-keep growing the same way UEFN Toolbelt's did: new files under
-`editor_plugin/Tools/`, each calling `ToolRegistry.Register(...)` for a
-handful of new tools, tracked in `registry.json`.
+large step up from the initial 25-tool foundation release. More
+importantly, this release adds the **UAG Bridge** (`uag_validate` /
+`uag_apply`): the piece that actually connects UNIGINE-TOOLBELT to the
+rest of the qFoldIT stack (SOS → SKG → SEM → UAG → UWI → MCP), mirroring
+UEFN-TOOLBELT's `unreal-world-builder` skill and structured identically to
+UNITY-TOOLBELT's own UAG Bridge — same schema, same validation rules, same
+"call existing tools, report gaps explicitly" contract, so a single UAG
+document is interchangeable between the two engine adapters. See
+[docs/UAG_BRIDGE.md](docs/UAG_BRIDGE.md) for the exact contract and
+mapping table, and `tests/uag_validator/` + `tests/uag_bridge_simulation/`
+for how its logic was verified without a live UNIGINE installation.
 
 Categories most likely to need SDK-version adjustment before production
 use (see the ⚠ notes at the top of each file): Physics, Navigation,

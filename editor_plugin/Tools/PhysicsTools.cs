@@ -33,6 +33,10 @@ namespace QFoldIT.Toolbelt
             ToolRegistry.Register("physics_set_gravity", "Physics",
                 "Sets the world's global gravity vector via console variable.",
                 SetGravity);
+
+            ToolRegistry.Register("physics_add_joint", "Physics",
+                "Adds a Fixed/Hinge/Slider joint connecting a node's physics body to another node's body (or to the world if connected_body is empty).",
+                AddJoint);
         }
 
         private static object AddBody(JObject p)
@@ -123,6 +127,42 @@ namespace QFoldIT.Toolbelt
             float x = (float?)p["x"] ?? 0f, y = (float?)p["y"] ?? -9.81f, z = (float?)p["z"] ?? 0f;
             Console.Run($"physics_gravity \"{x} {y} {z}\"");
             return new { success = true, gravity = new[] { x, y, z } };
+        }
+
+        private static object AddJoint(JObject p)
+        {
+            string name = (string)p["name"];
+            string jointType = ((string)p["joint_type"] ?? "fixed").ToLowerInvariant();
+            string connectedBodyName = (string)p["connected_body"];
+
+            var node = UnigineCompat.FindNodeByName(name);
+            if (node == null) return new { success = false, error = $"Node '{name}' not found." };
+            var body0 = Body.GetBody(node) ?? new BodyRigid(node);
+
+            Body body1 = null;
+            if (!string.IsNullOrEmpty(connectedBodyName))
+            {
+                var connectedNode = UnigineCompat.FindNodeByName(connectedBodyName);
+                if (connectedNode == null) return new { success = false, error = $"Connected body '{connectedBodyName}' not found." };
+                body1 = Body.GetBody(connectedNode) ?? new BodyRigid(connectedNode);
+            }
+
+            var worldPos = node.WorldPosition;
+            try
+            {
+                Joint joint = jointType switch
+                {
+                    "fixed" => new JointFixed(body0, body1),
+                    "hinge" => new JointHinge(body0, body1, worldPos, new Unigine.Math.vec3(0, 1, 0)),
+                    "slider" => new JointSlider(body0, body1, worldPos, new Unigine.Math.vec3(0, 1, 0)),
+                    _ => new JointFixed(body0, body1)
+                };
+                return new { success = true, name, joint_type = jointType, connected_to = connectedBodyName };
+            }
+            catch (System.Exception ex)
+            {
+                return new { success = false, error = $"Joint constructor signature may differ for your SDK version: {ex.Message}" };
+            }
         }
     }
 }

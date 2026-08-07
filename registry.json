@@ -222,13 +222,14 @@
       "description": "Rigid bodies, collision shapes, physics materials, raycasts, global gravity.",
       "category": "Physics",
       "file": "editor_plugin/Tools/PhysicsTools.cs",
-      "tool_count": 5,
+      "tool_count": 6,
       "tools": [
         "physics_add_body",
         "physics_add_shape",
         "physics_set_material",
         "physics_raycast_query",
-        "physics_set_gravity"
+        "physics_set_gravity",
+        "physics_add_joint"
       ]
     },
     {
@@ -269,7 +270,7 @@
       "description": "Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world.",
       "category": "Scene",
       "file": "editor_plugin/Tools/SceneTools.cs",
-      "tool_count": 7,
+      "tool_count": 8,
       "tools": [
         "spawn_primitive",
         "transform_node",
@@ -277,7 +278,8 @@
         "delete_node",
         "parent_node",
         "world_list_nodes",
-        "world_find_by_name"
+        "world_find_by_name",
+        "spawn_group_node"
       ]
     },
     {
@@ -311,6 +313,21 @@
         "tag_find_nodes",
         "layer_create",
         "layer_assign"
+      ]
+    },
+    {
+      "id": "uag_bridge_tools",
+      "name": "UAG Bridge Tools",
+      "version": "0.2.0",
+      "author": "qFoldIT",
+      "type": "core",
+      "description": "Validates and realizes qFoldIT Universal Assembly Graphs by dispatching to this toolbelt's own registered tools — the Universal World Interface adapter connecting UNIGINE 2 to the rest of the qFoldIT stack.",
+      "category": "UAGBridge",
+      "file": "editor_plugin/Tools/UAGBridgeTools.cs",
+      "tool_count": 2,
+      "tools": [
+        "uag_validate",
+        "uag_apply"
       ]
     },
     {

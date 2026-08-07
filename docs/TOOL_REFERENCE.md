@@ -1,6 +1,6 @@
 # Tool Reference — qFoldIT Toolbelt for UNIGINE 2 / UNIGINE 2 Sim
 
-Auto-summarized from `registry.json` (2026-08-03). 80 tools across 22 categories.
+Auto-summarized from `registry.json` (2026-08-03). 84 tools across 23 categories.
 
 Companion to UNIGINE's official MCPBridge Plugin (27 base tools) — see README.md for the relationship.
 
@@ -144,6 +144,7 @@ Source: `editor_plugin/Tools/PhysicsTools.cs`
 - `physics_set_material`
 - `physics_raycast_query`
 - `physics_set_gravity`
+- `physics_add_joint`
 
 ## Procedural — Procedural Placement & Arena
 
@@ -175,6 +176,7 @@ Source: `editor_plugin/Tools/SceneTools.cs`
 - `parent_node`
 - `world_list_nodes`
 - `world_find_by_name`
+- `spawn_group_node`
 
 ## Stamps — Stamp Tools
 
@@ -196,6 +198,15 @@ Source: `editor_plugin/Tools/TagsLayersTools.cs`
 - `tag_find_nodes`
 - `layer_create`
 - `layer_assign`
+
+## UAGBridge — UAG Bridge Tools
+
+Validates and realizes qFoldIT Universal Assembly Graphs by dispatching to this toolbelt's own registered tools — the Universal World Interface adapter connecting UNIGINE 2 to the rest of the qFoldIT stack.
+
+Source: `editor_plugin/Tools/UAGBridgeTools.cs`
+
+- `uag_validate`
+- `uag_apply`
 
 ## UI — UI Tools
 

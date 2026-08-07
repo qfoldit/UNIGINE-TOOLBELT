@@ -38,6 +38,10 @@ namespace QFoldIT.Toolbelt
             ToolRegistry.Register("world_find_by_name", "Scene",
                 "Finds all nodes whose name contains the given substring.",
                 FindByName);
+
+            ToolRegistry.Register("spawn_group_node", "Scene",
+                "Creates an empty NodeDummy — a pure transform container for grouping children, with no visible geometry (maps UAG's 'group' node type).",
+                SpawnGroupNode);
         }
 
         private static object SpawnPrimitive(JObject p)
@@ -155,6 +159,20 @@ namespace QFoldIT.Toolbelt
                 .Select(n => n.Name)
                 .ToList();
             return new { success = true, query, matches };
+        }
+
+        private static object SpawnGroupNode(JObject p)
+        {
+            string name = (string)p["name"];
+            double x = (double?)p["x"] ?? 0, y = (double?)p["y"] ?? 0, z = (double?)p["z"] ?? 0;
+            if (string.IsNullOrEmpty(name)) return new { success = false, error = "name is required." };
+
+            var node = new NodeDummy();
+            UnigineCompat.SetWorldPosition(node, x, y, z);
+            node.Name = name;
+            World.AddChild(node);
+
+            return new { success = true, name = node.Name };
         }
     }
 }
