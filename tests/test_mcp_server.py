@@ -47,7 +47,7 @@ def test_list_toolbelt_tools_falls_back_to_static_registry():
     result = json.loads(result_json)
     assert result["success"] is True
     assert "plugins" in result
-    assert len(result["plugins"]) == 23  # 23 category files as of this release
+    assert len(result["plugins"]) == 25  # 25 category files as of this release
 
 
 def test_registry_json_tool_count_matches_source_annotations():
@@ -57,7 +57,7 @@ def test_registry_json_tool_count_matches_source_annotations():
 
     total_declared = sum(p["tool_count"] for p in registry["plugins"])
     total_listed = sum(len(p["tools"]) for p in registry["plugins"])
-    assert total_declared == total_listed == 84
+    assert total_declared == total_listed == 90
 
 
 def test_post_handles_generic_exception_gracefully(monkeypatch):

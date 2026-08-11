@@ -22,4 +22,6 @@ namespace QFoldIT.Toolbelt
     public static class WorldManagementTools { public static void Register() { } }
     public static class MeasurementTools { public static void Register() { } }
     public static class UtilityTools { public static void Register() { } }
+    public static class InteractionTools { public static void Register() { } }
+    public static class ScientificVisualizationTools { public static void Register() { } }
 }

@@ -1,6 +1,6 @@
 # Tool Reference — qFoldIT Toolbelt for UNIGINE 2 / UNIGINE 2 Sim
 
-Auto-summarized from `registry.json` (2026-08-03). 84 tools across 23 categories.
+Auto-summarized from `registry.json` (2026-08-03). 90 tools across 25 categories.
 
 Companion to UNIGINE's official MCPBridge Plugin (27 base tools) — see README.md for the relationship.
 
@@ -58,6 +58,16 @@ Source: `editor_plugin/Tools/ConsoleTools.cs`
 - `console_run_command`
 - `console_get_variable`
 - `world_save`
+
+## Interaction — Interaction Tools
+
+Real interaction realization: ensures physics selectability + a persisted, queryable interaction-type registry for any of the 10 gameplay mechanics or legacy triggers.
+
+Source: `editor_plugin/Tools/InteractionTools.cs`
+
+- `interaction_create`
+- `interaction_get`
+- `interaction_list`
 
 ## Lighting — Lighting Tools
 
@@ -177,6 +187,16 @@ Source: `editor_plugin/Tools/SceneTools.cs`
 - `world_list_nodes`
 - `world_find_by_name`
 - `spawn_group_node`
+
+## ScientificVisualization — Scientific Visualization Tools
+
+Real scientific-state visualization: mechanic-differentiated visible primitives plus a persisted, queryable binding registry for live scientific-state URIs.
+
+Source: `editor_plugin/Tools/ScientificVisualizationTools.cs`
+
+- `scientific_visualization_create`
+- `scientific_binding_create`
+- `scientific_binding_get`
 
 ## Stamps — Stamp Tools
 

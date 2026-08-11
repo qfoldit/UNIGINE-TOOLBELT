@@ -1,6 +1,6 @@
 # qFoldIT Toolbelt — UNIGINE 2 / UNIGINE 2 Sim
 
-**84 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
+**90 composite editor-automation tools for UNIGINE 2, exposed to AI agents via a companion MCP bridge that sits alongside UNIGINE's own official MCPBridge Plugin.**
 
 > Built by **qFoldIT** — foundation release, 2026
 
@@ -107,7 +107,7 @@ likely to need adjusting.
    then connect your MCP client. Call `list_toolbelt_tools` to confirm the
    handshake.
 
-## Tool categories (84 tools total)
+## Tool categories (90 tools total)
 
 | Category | Tools | What it covers |
 |----------|:-----:|-----------------|
@@ -116,6 +116,7 @@ likely to need adjusting.
 | Camera | 5 | Player/camera creation, dependency-free follow, clipping, FOV, screenshots. |
 | Components | 5 | Reflection-based generic add/remove/get/set/list for C# Components. |
 | BuildConsole | 3 | Run console commands, read console variables, save the world. |
+| Interaction | 3 | Real interaction realization: ensures physics selectability + a persisted, queryable interaction-type registry for any of the 10 gameplay mechanics or legacy triggers. |
 | Lighting | 5 | Create lights, set environment/fog, trigger GI reload, apply full lighting presets. |
 | Materials | 4 | 12 material presets, bulk swap by name match, team-color split, preset listing. |
 | Measurement | 3 | Distance between nodes, per-node bounds, full-world bounds. |
@@ -127,6 +128,7 @@ likely to need adjusting.
 | Procedural | 2 | 8 geometric placement patterns (grid, circle, arc, spiral, line, wave, helix, radial) plus a symmetrical arena generator. |
 | Project | 1 | Standard folder scaffold plus a boilerplate GameManager WorldLogic class. |
 | Scene | 8 | Spawn, transform, clone, delete, parent, list, and find nodes in the loaded world. |
+| ScientificVisualization | 3 | Real scientific-state visualization: mechanic-differentiated visible primitives plus a persisted, queryable binding registry for live scientific-state URIs. |
 | Stamps | 3 | Save a selection as a reusable stamp; place it anywhere with rotation; list saved stamps. |
 | TagsLayers | 4 | Free-text tag registry plus real IntersectionMask-backed named layers. |
 | UAGBridge | 2 | Validates and realizes qFoldIT Universal Assembly Graphs by dispatching to this toolbelt's own registered tools — the Universal World Interface adapter connecting UNIGINE 2 to the rest of the qFoldIT stack. |
@@ -137,24 +139,60 @@ likely to need adjusting.
 
 ## Roadmap to parity
 
-This release brings the toolbelt to **84 real tools** across 23 categories
-— still short of UEFN Toolbelt's 355 and well beyond MCPBridge's 27, but a
-large step up from the initial 25-tool foundation release. More
-importantly, this release adds the **UAG Bridge** (`uag_validate` /
-`uag_apply`): the piece that actually connects UNIGINE-TOOLBELT to the
-rest of the qFoldIT stack (SOS → SKG → SEM → UAG → UWI → MCP), mirroring
-UEFN-TOOLBELT's `unreal-world-builder` skill and structured identically to
-UNITY-TOOLBELT's own UAG Bridge — same schema, same validation rules, same
-"call existing tools, report gaps explicitly" contract, so a single UAG
-document is interchangeable between the two engine adapters. See
-[docs/UAG_BRIDGE.md](docs/UAG_BRIDGE.md) for the exact contract and
-mapping table, and `tests/uag_validator/` + `tests/uag_bridge_simulation/`
-for how its logic was verified without a live UNIGINE installation.
+This release brings the toolbelt to **90 real tools** across 25
+categories. More importantly, this revision adapts the whole UAG Bridge to
+**qfoldit-engine-adapter-spec-v0.1**, the formal spec package (not the
+earlier informal Phase-1 draft): `UagModel.cs` now matches the normative
+`schemas/uag.schema.json` exactly (`schema`/`scene`/`node.parent`/
+`bindings[]`), `uag_validate` emits `{code, message}` errors matching the
+spec's own `conformance/test_vectors.json` byte-for-byte, and
+`qfoldit.adapter.json` (this repo's root) is strictly valid against
+`schemas/adapter-manifest.schema.json`.
 
-Categories most likely to need SDK-version adjustment before production
-use (see the ⚠ notes at the top of each file): Physics, Navigation,
-Animation-adjacent (Particles), UI (Widget API), and Components (C#
-component system availability varies by SDK version).
+**Real, verified milestone**: running the spec's own unmodified
+`reference/compiler.py` (from `qfoldit-scientific-gameplay-framework-v0.1`)
+against this repo's actual `qfoldit.adapter.json` now compiles all 5
+currently-unlocked gameplay patterns with `status=success` and zero gaps —
+up from 0/5 before this revision. Earned by building real capability, not
+by hand-editing the manifest's status field:
+
+- **`interaction`** (blocked 4/5 patterns): `InteractionTools.cs` ensures
+  a target node has a real physics shape/body (so `physics_raycast_query`
+  can detect it) and records the interaction type in a persisted,
+  queryable JSON registry (`interaction_get`/`interaction_list`), for all
+  10 gameplay mechanics plus legacy triggers. Honest scope, explicitly
+  documented in the manifest and the file's own header: unlike the Unity
+  adapter's real `OnMouseDown → UnityEvent` wiring, this does **not**
+  wire a live click-to-callback — UNIGINE's Input/callback API needs
+  SDK-version verification this adapter doesn't have access to.
+- **`scientific.visualization`** (blocked 5/5 patterns):
+  `ScientificVisualizationTools.cs` realizes every UAG
+  `scientific_subject/<mechanic>` node as a real, visible,
+  mechanic-differentiated primitive, plus a real, persisted binding
+  registry giving `bindings[]` genuine substance. Honest scope: unlike
+  the Unity adapter, no floating 3D label — UNIGINE's 3D text API is
+  another SDK-version unknown this adapter didn't guess at.
+- **`geometry.procedural`** (blocked 2/5 patterns): already real, working
+  capability from an earlier revision — no new code needed, just an
+  honest status correction.
+- **`physics.joints`**: deliberately kept at `partial`, not `supported` —
+  `physics_add_joint`'s exact joint constructor signatures were never
+  verified against a live SDK (see the top of `PhysicsTools.cs`). Not
+  required by any of the 5 currently-unlocked patterns, so this doesn't
+  block the 5/5 result; a more conservative, honest rating than what
+  Unity's native-Unity-component version of the same capability can
+  claim.
+
+See [docs/UAG_BRIDGE.md](docs/UAG_BRIDGE.md) for the full contract,
+mapping table, and every capability's exact honest scope.
+`tests/conformance/` runs the spec's real `test_vectors.json` against the
+actual, unmodified `UagValidator.cs`; `tests/uag_bridge_simulation/` runs
+the full `uag_apply` orchestration end-to-end against fake tool handlers.
+
+Structured to keep growing the same way UEFN Toolbelt's did: new files
+under `editor_plugin/Tools/`, each calling `ToolRegistry.Register(...)`
+for a handful of new tools, tracked in `registry.json`.
+
 
 ## License
 

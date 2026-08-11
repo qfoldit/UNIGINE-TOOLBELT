@@ -16,7 +16,7 @@ namespace QFoldIT.Toolbelt
                 SpawnPrimitive);
 
             ToolRegistry.Register("transform_node", "Scene",
-                "Sets position/rotation/scale on an existing node found by name.",
+                "Sets position/rotation/scale on an existing node found by name, atomically (all three components together). Unspecified rotation/scale default to identity, not to whatever was set on a previous call. Accepts uniform 'scale' or per-axis 'scale_x'/'scale_y'/'scale_z'.",
                 TransformNode);
 
             ToolRegistry.Register("clone_node", "Scene",
@@ -63,24 +63,34 @@ namespace QFoldIT.Toolbelt
             var node = UnigineCompat.FindNodeByName(name);
             if (node == null) return new { success = false, error = $"Node '{name}' not found." };
 
+            // NOTE: every call sets position, rotation, AND scale together in
+            // one atomic transform (via UnigineCompat.SetTransform). Any
+            // component not given in this call defaults to its identity
+            // value (position defaults to the node's *current* position,
+            // rotation to 0/0/0, scale to 1/1/1) — this call does not
+            // preserve a rotation/scale set by a *previous* transform_node
+            // call unless you pass it again explicitly. Pass all the values
+            // you care about together for predictable results.
             var pos = node.WorldPosition;
             double x = (double?)p["x"] ?? pos.x;
             double y = (double?)p["y"] ?? pos.y;
             double z = (double?)p["z"] ?? pos.z;
-            UnigineCompat.SetWorldPosition(node, x, y, z);
 
-            if (p["rot_x"] != null || p["rot_y"] != null || p["rot_z"] != null)
-            {
-                float rx = (float?)p["rot_x"] ?? 0f;
-                float ry = (float?)p["rot_y"] ?? 0f;
-                float rz = (float?)p["rot_z"] ?? 0f;
-                UnigineCompat.SetEulerRotation(node, rx, ry, rz);
-            }
+            float rx = (float?)p["rot_x"] ?? 0f;
+            float ry = (float?)p["rot_y"] ?? 0f;
+            float rz = (float?)p["rot_z"] ?? 0f;
 
-            if (p["scale"] != null)
-                UnigineCompat.SetUniformScale(node, (float)p["scale"]);
+            // Accepts either a single uniform "scale", or independent
+            // "scale_x"/"scale_y"/"scale_z" for non-uniform scale. Explicit
+            // per-axis values win over the uniform one if both are given.
+            float uniformScale = (float?)p["scale"] ?? 1f;
+            float sx = (float?)p["scale_x"] ?? uniformScale;
+            float sy = (float?)p["scale_y"] ?? uniformScale;
+            float sz = (float?)p["scale_z"] ?? uniformScale;
 
-            return new { success = true, name = node.Name, position = new[] { x, y, z } };
+            UnigineCompat.SetTransform(node, x, y, z, rx, ry, rz, sx, sy, sz);
+
+            return new { success = true, name = node.Name, position = new[] { x, y, z }, scale = new[] { sx, sy, sz } };
         }
 
         private static object CloneNode(JObject p)

@@ -1,116 +1,138 @@
 # UAG Bridge — qFoldIT Toolbelt for UNIGINE 2 / UNIGINE 2 Sim
 
-The UAG Bridge is what makes UNIGINE-TOOLBELT part of the qFoldIT stack
-(`SOS → SKG → SEM → UAG → UWI → MCP`) rather than a standalone automation
-kit sitting next to MCPBridge Plugin. It's two tools, `uag_validate` and
-`uag_apply`, implemented in
-[`editor_plugin/Tools/UAGBridgeTools.cs`](../editor_plugin/Tools/UAGBridgeTools.cs),
-built on the UAG v0.1 model in
-[`editor_plugin/UagModel.cs`](../editor_plugin/UagModel.cs) and the
-validator in [`editor_plugin/UagValidator.cs`](../editor_plugin/UagValidator.cs).
+The UAG Bridge is what connects UNIGINE-TOOLBELT to the rest of the
+qFoldIT stack (`SOS → SKG → SEM → UAG → UWI → MCP`), companion to (not a
+replacement for) UNIGINE's official MCPBridge Plugin. As of this revision
+it conforms to the **formal, normative** artifacts in
+`qfoldit-engine-adapter-spec-v0.1`, not the earlier informal markdown
+schema draft this bridge was originally built against:
 
-Same schema as UNITY-TOOLBELT's bridge — copied field-for-field from the
-canonical source (`qfoldit/UEFN-TOOLBELT`'s
-`.claude/skills/game-designer/references/uag_schema.md`), so a single UAG
-document works against either engine adapter unchanged.
+- `editor_plugin/UagModel.cs` — matches `schemas/uag.schema.json` exactly,
+  identical shape to UNITY-TOOLBELT's version, so a single UAG document
+  is byte-for-byte interchangeable between the two engine adapters.
+- `editor_plugin/UagValidator.cs` — emits `{code, message}` errors
+  matching `conformance/test_vectors.json` (verified against the actual,
+  unmodified vector file — see `tests/conformance/`).
+- `qfoldit.adapter.json` (repo root) — strictly valid against
+  `schemas/adapter-manifest.schema.json`.
+- `editor_plugin/Tools/UAGBridgeTools.cs` — `uag_validate`/`uag_apply`
+  return shape matches `schemas/execution-report.schema.json`.
 
-## Design principle — and one difference from the Unity version
+## Schema, in brief
 
-Same rule as UEFN-TOOLBELT's `unreal-world-builder` skill and
-UNITY-TOOLBELT's own bridge: **never re-implement a primitive here.**
-What's different structurally: this file dispatches through
-`ToolRegistry.Dispatch(name, JObject)` for *every* tool call, instead of
-calling other files' methods directly in-process. That's the exact same
-path an external MCP client uses via `mcp_server.py`'s
-`run_toolbelt_tool` — so this adapter has no special access any other
-caller lacks, and its whole orchestration logic could be (and was, see
-below) tested by swapping in fake handlers for the dispatched tool names.
+See UNITY-TOOLBELT's `docs/UAG_BRIDGE.md` for the full schema walkthrough
+— identical here. Key points: `node.parent` (not `parent_id`), no
+`connections[]` array, a `bindings[]` array for scientific-state
+attachments.
 
 ## The two tools
 
 ### `uag_validate({ "uag_json": "..." })`
 
-Identical contract to the Unity version: duplicate-id check, dangling
-reference check (`parent_id` / `from_node` / `to_node` / `target_nodes[]`
-/ interaction `target_node`), `parent_child` cycle detection, and a gap
-report (`unmapped_node_types`, `unmapped_constraint_types`,
-`unmapped_interactions` — informational, not errors).
+Same contract as the Unity version: `INVALID_SCHEMA`, `DUPLICATE_NODE_ID`,
+`DANGLING_PARENT`/`DANGLING_REFERENCE`, `HIERARCHY_CYCLE`, plus gap
+reporting (informational).
 
-### `uag_apply({ "uag_json": "...", "generate_interaction_stub": true, "stub_output_path": "..." })`
+### `uag_apply({ "uag_json": "..." })`
 
 Validates first; **aborts with zero `ToolRegistry.Dispatch` calls if
-invalid** (verified directly — see below). If valid, four passes:
-
-1. Create every mapped-type node via `Dispatch`.
-2. Apply `parent_id` hierarchy via `parent_node`.
-3. Apply `connections[]`: `parent_child` → `parent_node`; `joint_fixed` /
-   `joint_hinge` / `joint_slider` → `physics_add_joint`; anything else
-   (`data_link`) → `unmapped_connection_types`.
-4. Apply `constraints[]`: `physics_collision` → `physics_add_shape` +
-   `physics_add_body`; anything else is collected for the interaction stub.
-
-Every node touched by an unmapped constraint or any interaction is
-collected into one set; if non-empty and `generate_interaction_stub` is
-true, `uag_apply` dispatches `codegen_node_component` once to produce a
-`UagInteractionHandlers` WorldLogic class with a real node reference per
-target — a usable artifact, not just a text report.
+invalid** (verified directly in `tests/uag_bridge_simulation/`). Five
+passes: nodes → `parent` hierarchy → `constraints[]` → `interactions[]`
+(real realization, see below) → `bindings[]` (real realization, see
+below). Returns the same structured execution report shape as the Unity
+adapter (`status`/`created`/`updated`/`skipped`/`gaps`/`warnings`/
+`errors`/`provenance`).
 
 ## Node type → tool mapping
 
 | UAG `type` | UNIGINE tool(s) dispatched | Notes |
 |---|---|---|
-| `mesh` | `asset_instantiate_node` if `properties.mesh_ref` set, else `spawn_primitive` | `properties.primitive` selects the shape (default `box`) |
-| `light` | `light_create` | `properties.light_type`, `color_hex`, `intensity` |
-| `camera` | `camera_create` | `properties.fov` |
-| `audio_source` | `spawn_group_node` (anchor) + `audio_add_source` | **requires** `properties.sound_path` — UNIGINE has no default sound asset; missing it is a per-node failure, not a type-level gap (see below) |
-| `particle_emitter` | `particles_spawn_from_asset` | **requires** `properties.asset_ref` (a `.particles` file) — UNIGINE has no built-in generic preset the way Unity's `ParticleSystem` defaults do |
-| `ui_panel` | `ui_create_panel` | world x/y truncated to `int` and reused as 2D screen position |
-| `trigger_volume` | `spawn_primitive` (box) + `physics_add_shape(is_trigger=true)` | |
-| `group` | `spawn_group_node` (`NodeDummy`) | added specifically to close this gap — UNIGINE's real empty-container node type |
+| `mesh` | `asset_instantiate_node` if `properties.mesh_ref` set, else `spawn_primitive` | |
+| `light` | `light_create` | |
+| `camera` | `camera_create` | |
+| `audio_source` | `spawn_group_node` + `audio_add_source` | **requires** `properties.sound_path` — fails cleanly with no orphan node if missing |
+| `particle_emitter` | `particles_spawn_from_asset` | **requires** `properties.asset_ref` |
+| `ui_panel` | `ui_create_panel` | |
+| `trigger_volume` | `spawn_primitive` + `physics_add_shape(is_trigger=true)` | |
+| `group` | `spawn_group_node` (`NodeDummy`) | |
+| `molecular_structure` | `scientific_visualization_create` | legacy type from the spec's own hand-authored example |
+| `interaction_zone` | `spawn_primitive` + trigger shape + `interaction_create` | legacy type; `properties.interaction` selects the interaction type |
+| `scientific_subject/<mechanic>` | `scientific_visualization_create` | **the exact shape `reference/compiler.py` emits** |
 | `custom` | *(none)* | always unmapped |
+
+## Real capability: `interaction` and `scientific.visualization`
+
+Same P0 priorities as the Unity adapter, realized honestly within this
+engine's real constraints:
+
+- **`interaction_create`** (`editor_plugin/Tools/InteractionTools.cs`)
+  ensures the target node has a real physics shape/body — so
+  `physics_raycast_query` can genuinely detect it — and records the
+  interaction type in a persisted JSON registry
+  (`Saved/QFoldIT_Toolbelt/interactions.json`), readable back via
+  `interaction_get`/`interaction_list`. Covers all 10 gameplay mechanics
+  plus legacy triggers.
+- **`scientific_visualization_create`**
+  (`editor_plugin/Tools/ScientificVisualizationTools.cs`) realizes a
+  `scientific_subject/<mechanic>` node as a real, visible,
+  mechanic-differentiated primitive (shape + material preset keyed by
+  mechanic).
+- **`scientific_binding_create`** records the bound `scientific-state://`
+  URI in a persisted, queryable JSON registry
+  (`Saved/QFoldIT_Toolbelt/scientific_bindings.json`, readable via
+  `scientific_binding_get`), instead of silently accepting-and-discarding
+  the binding.
+
+**Honest scope — deliberately more conservative than the Unity adapter**,
+because UNIGINE's Input/callback and 3D-text/billboard APIs need
+SDK-version verification this adapter doesn't have access to (the same
+constraint flagged throughout this repo since Phase 1):
+
+- **No live click-to-callback.** Unity's `Runtime/QFoldITInteractable.cs`
+  has a real, working `OnMouseDown → UnityEvent` wiring. This adapter
+  gives you real physical selectability (`physics_raycast_query` will hit
+  the node) and a real, queryable interaction-type record — but does
+  **not** itself fire a callback when clicked. A companion script polling
+  input and cross-referencing `interaction_get` against
+  `physics_raycast_query`'s hit result is the documented path to a live
+  callback; it isn't implemented here rather than guessed at.
+- **No floating label.** Unity's version optionally adds a world-space
+  text label above the visualization anchor. This adapter does not,
+  since UNIGINE's 3D text API wasn't available to verify.
+
+`uag_apply` emits an explicit `warning` for every realized
+gameplay-mechanic interaction spelling this out, rather than letting
+`status: "success"` imply more than was actually delivered.
 
 ## Known gaps (reported, not hidden)
 
-- **`audio_source` / `particle_emitter` without an asset reference**: the
-  *type* is mapped, but a specific node instance fails at apply time if
-  `properties.sound_path` / `properties.asset_ref` is missing — this shows
-  up in `node_failures`, not `unmapped_node_types`. Verified directly in
-  the simulation test (see below): a `snd1` node with no `sound_path`
-  correctly appears in `node_failures` while everything else still applies.
-- **`joint_slider`**: `physics_add_joint`'s constructor uses `JointSlider`
-  if available on your SDK version, but per the `⚠` note in
-  `PhysicsTools.cs`, exact joint constructor signatures vary by SDK — this
-  is flagged as an execution-time risk, not silently assumed to work.
-- **Non-uniform scale**: same approximation as the Unity bridge — a UAG
-  `scale: [2, 1, 0.5]` is applied via `transform_node`'s single `scale`
-  float (its X component only).
-- **`data_link` connections** and **`interaction_grabbable` /
-  `animation_trigger` / `logic_rule` constraints / all interaction
-  triggers**: no live UNIGINE primitive — always become gaps, turned into
-  the `UagInteractionHandlers` codegen stub.
+- **`audio_source` / `particle_emitter` without an asset reference**: type
+  is mapped, a specific instance fails cleanly at apply time (no orphan
+  node — verified directly in `tests/uag_bridge_simulation/`) if
+  `properties.sound_path`/`properties.asset_ref` is missing.
+- **`joint_slider`**: `physics_add_joint`'s constructor signatures were
+  never verified against a live SDK (see `PhysicsTools.cs`'s header) —
+  kept at capability status `partial` in `qfoldit.adapter.json`, not
+  `supported`, specifically because of this.
+- **`data_link` and `logic_rule`-flavoured constraints**: no live UNIGINE
+  primitive — reported as gaps.
 
-## How this was verified
+## Verified
 
-Both `UagModel.cs`/`UagValidator.cs` (zero `Unigine.*` dependency by
-design) and — going further than the Unity version — the **entire
-`uag_apply` orchestration logic** were compiled and run standalone with
-`mcs`/`mono`, outside any UNIGINE installation:
-
-- `tests/uag_validator/` — the same 10-scenario/24-assertion validator
-  coverage as Unity's, run against this file's actual
-  `MappedNodeTypes`/`MappedConstraintTypes` sets.
-- `tests/uag_bridge_simulation/` — fake handlers registered in place of
-  the real `Unigine.*`-backed tools, then `uag_apply` run against a graph
-  covering every node type (including one deliberately unmapped `custom`
-  node and one node that fails at apply time), every connection type
-  (including unmapped `data_link`), every constraint type (including
-  unmapped `logic_rule`), and an interaction — 23 assertions checking both
-  the returned report **and** the exact sequence of tool names/parameters
-  dispatched. Also verifies the abort contract directly: an invalid graph
-  produces zero `Dispatch` calls, not a partial application.
-
-This is real confidence in the bridge's control flow — what it is *not* a
-substitute for is verifying that the real `spawn_primitive` /
-`light_create` / etc. implementations behave as documented against a live
-UNIGINE SDK; see the `⚠` notes throughout `editor_plugin/Tools/*.cs` for
-what still needs checking there.
+- `editor_plugin/UagModel.cs`/`UagValidator.cs`/`UAGBridgeMechanics.cs`
+  have zero `Unigine.*` dependency by design — compiled and run standalone
+  with `mcs`/`mono`, including against the **real, unmodified**
+  `conformance/test_vectors.json` from `qfoldit-engine-adapter-spec-v0.1`.
+- `editor_plugin/Tools/UAGBridgeTools.cs` dispatches through
+  `ToolRegistry.Dispatch(name, JObject)` for every call — the **entire
+  orchestration logic**, including the new `scientific_subject/*`/
+  interaction/binding passes, was compiled and run end-to-end against fake
+  tool handlers standing in for the real UNIGINE-backed tools (22
+  assertions, `tests/uag_bridge_simulation/`), confirming exactly which
+  tools get called, with what parameters, in what order, and that an
+  invalid graph produces **zero** dispatch calls.
+- **The compiled result**: running the spec's own unmodified
+  `reference/compiler.py` against this repo's actual `qfoldit.adapter.json`
+  compiles all 5 currently-unlocked gameplay patterns with
+  `status=success` and zero gaps — even with `physics.joints` honestly
+  kept at `partial`.

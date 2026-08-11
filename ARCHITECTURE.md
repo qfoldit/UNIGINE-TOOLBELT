@@ -77,8 +77,9 @@ qfoldit-unigine-toolbelt/
 │   ├── ToolbeltListener.cs        HTTP transport, main-thread dispatch queue (engine-agnostic)
 │   ├── ToolRegistry.cs            name -> handler dispatch table
 │   ├── UnigineCompat.cs           ⚠ the file with direct Unigine.* API calls for core node/material/transform ops
-│   ├── UagModel.cs                UAG v0.1 data model (POCO, zero Unigine.* dependency)
-│   ├── UagValidator.cs            dangling-ref/cycle/gap validation (zero Unigine.* dependency)
+│   ├── UagModel.cs                UAG data model conforming to qfoldit.uag/0.1 (POCO, zero Unigine.* dependency)
+│   ├── UagValidator.cs            dangling-ref/cycle/gap validation with {code,message} errors (zero Unigine.* dependency)
+│   ├── UAGBridgeMechanics.cs      shared interaction-type vocabulary (10 gameplay mechanics + legacy triggers)
 │   └── Tools/
 │       ├── SceneTools.cs          spawn/transform/clone/delete/parent/list/find
 │       ├── MaterialTools.cs       presets, bulk swap, team-color split
@@ -90,7 +91,7 @@ qfoldit-unigine-toolbelt/
 │       ├── AssetTools.cs         list/instantiate/find project assets
 │       ├── ConsoleTools.cs       console commands, variables, world save
 │       ├── LightingTools.cs      lights, environment/fog, GI reload, presets
-│       ├── PhysicsTools.cs       rigid bodies, shapes, materials, raycasts, gravity
+│       ├── PhysicsTools.cs       rigid bodies, shapes, materials, raycasts, gravity, joints
 │       ├── UITools.cs            Widget-based buttons/labels/panels/sliders
 │       ├── AudioTools.cs         ObjectSound source, one-shots, listener, volume
 │       ├── CameraTools.cs        Player/camera creation, follow, clipping, FOV, screenshots
@@ -102,13 +103,16 @@ qfoldit-unigine-toolbelt/
 │       ├── WorldManagementTools.cs   new/load/save-as/reload/info for the active world
 │       ├── MeasurementTools.cs   distance, per-node bounds, world bounds
 │       ├── UtilityTools.cs       batch rename, engine/world info
-│       └── UAGBridgeTools.cs     uag_validate / uag_apply — see docs/UAG_BRIDGE.md
+│       ├── UAGBridgeTools.cs     uag_validate / uag_apply — see docs/UAG_BRIDGE.md
+│       ├── InteractionTools.cs   interaction_create/get/list — real, persisted interaction registry
+│       └── ScientificVisualizationTools.cs   scientific_visualization_create / scientific_binding_create/get
 ├── docs/TOOL_REFERENCE.md
-├── docs/UAG_BRIDGE.md             UAG contract, mapping table, verification notes
+├── docs/UAG_BRIDGE.md             UAG contract, mapping table, capability notes, verification notes
+├── qfoldit.adapter.json           strictly valid against qfoldit-engine-adapter-spec-v0.1's adapter-manifest.schema.json
 ├── registry.json                  plugin manifest (mirrors UEFN Toolbelt's format)
 └── tests/
     ├── test_mcp_server.py         mcp_server.py contract tests (no live Editor required)
-    ├── uag_validator/              standalone mono tests for UagValidator.cs (see its README)
+    ├── conformance/                standalone mono tests against the REAL spec test_vectors.json (see its README)
     └── uag_bridge_simulation/      standalone mono end-to-end simulation of uag_apply (see its README)
 ```
 

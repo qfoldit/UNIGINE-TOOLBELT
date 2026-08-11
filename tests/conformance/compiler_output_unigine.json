@@ -1,0 +1,44 @@
+{
+  "schema": "qfoldit.uag/0.1",
+  "scene": {
+    "id": "protein_folding_construction-unigine",
+    "name": "Molecular Construction",
+    "metadata": {
+      "scientific_domain": "protein folding (classical walk simulation / peptide VQE)",
+      "domain_tag": "molecular-consumer",
+      "reference_mcp": "protein_design_mcp",
+      "mechanic": "construction",
+      "gate_status": "unlocked",
+      "experience_type": "interactive-science"
+    }
+  },
+  "nodes": [
+    {
+      "id": "subject",
+      "type": "scientific_subject/construction",
+      "properties": {
+        "source": "scientific-state://protein_design_mcp/protein_folding_construction",
+        "player_action": "assemble and rotate residues to reduce total conformational energy"
+      }
+    }
+  ],
+  "constraints": [],
+  "interactions": [
+    {
+      "id": "protein_folding_construction-primary-interaction",
+      "type": "construction",
+      "target": "subject"
+    }
+  ],
+  "bindings": [
+    {
+      "id": "protein_folding_construction-metric-binding",
+      "source": "scientific-state://protein_design_mcp/protein_folding_construction",
+      "target": "subject"
+    }
+  ],
+  "metadata": {
+    "compiler": "qfoldit-scientific-gameplay-compiler/0.1",
+    "presentation_theme": "molecular_construction_lab"
+  }
+}

@@ -71,12 +71,47 @@ namespace QFoldIT.Toolbelt
             return node.WorldPosition;
         }
 
-        public static void SetUniformScale(Node node, float scale)
+        /// <summary>
+        /// Sets position, rotation, and scale in ONE atomic operation via
+        /// dmat4.Compose. This is the only correct way to set more than one
+        /// of these three components on the same node: composing them
+        /// sequentially via separate SetWorldTransform calls (the previous
+        /// implementation of this file) is a real bug, not just a style
+        /// choice — e.g. calling "set position (10,0,0)" followed by "set
+        /// scale 2" via left-multiplying a Scale matrix onto the existing
+        /// WorldTransform also scales the translation component, moving
+        /// the node to (20,0,0) instead of (10,0,0) whenever position is
+        /// non-origin. Always call this instead of chaining
+        /// SetWorldPosition/SetEulerRotation/SetUniformScale on a node that
+        /// already has a non-identity transform.
+        /// </summary>
+        public static void SetTransform(Node node, double x, double y, double z,
+            float pitchDeg, float yawDeg, float rollDeg,
+            float scaleX, float scaleY, float scaleZ)
         {
-            var t = node.WorldTransform;
-            node.WorldTransform = Unigine.Math.dmat4.Scale(new Unigine.Math.vec3(scale, scale, scale)) * t;
+            var pos = new Unigine.Math.dvec3(x, y, z);
+            var rot = Unigine.Math.quat.Euler(pitchDeg, yawDeg, rollDeg);
+            var scale = new Unigine.Math.vec3(scaleX, scaleY, scaleZ);
+            node.SetWorldTransform(Unigine.Math.dmat4.Compose(pos, rot, scale));
         }
 
+        /// <summary>
+        /// Safe ONLY on a freshly created node whose transform is still
+        /// identity (rotation=0, scale=1) — e.g. immediately after `new
+        /// ObjectMeshStatic(...)`/`new NodeDummy()`, before anything else
+        /// has touched its transform. For any node that might already have
+        /// a rotation or non-uniform scale applied, use SetTransform
+        /// instead so those components aren't silently reset.
+        /// </summary>
+        public static void SetUniformScale(Node node, float scale)
+        {
+            var pos = node.WorldPosition;
+            node.SetWorldTransform(Unigine.Math.dmat4.Compose(pos, Unigine.Math.quat.IDENTITY, new Unigine.Math.vec3(scale, scale, scale)));
+        }
+
+        /// <summary>
+        /// Same non-destructive-only-on-fresh-nodes caveat as SetUniformScale.
+        /// </summary>
         public static void SetEulerRotation(Node node, float pitchDeg, float yawDeg, float rollDeg)
         {
             var pos = node.WorldPosition;

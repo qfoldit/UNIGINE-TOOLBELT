@@ -1,0 +1,44 @@
+{
+  "schema": "qfoldit.uag/0.1",
+  "scene": {
+    "id": "protein-folding-demo",
+    "name": "Protein Folding Challenge",
+    "metadata": {
+      "scientific_domain": "protein-design",
+      "experience_type": "interactive-science"
+    }
+  },
+  "nodes": [
+    {
+      "id": "protein",
+      "type": "molecular_structure",
+      "properties": {
+        "source": "scientific-state://protein/example",
+        "representation": "ribbon"
+      }
+    },
+    {
+      "id": "binding-site",
+      "type": "interaction_zone",
+      "parent": "protein",
+      "properties": {
+        "interaction": "select"
+      }
+    }
+  ],
+  "constraints": [],
+  "interactions": [
+    {
+      "id": "select-binding-site",
+      "type": "selection",
+      "target": "binding-site"
+    }
+  ],
+  "bindings": [
+    {
+      "id": "energy-trace",
+      "source": "scientific-state://energy-trace",
+      "target": "protein"
+    }
+  ]
+}

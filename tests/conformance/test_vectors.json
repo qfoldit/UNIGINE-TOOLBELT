@@ -1,0 +1,35 @@
+{
+  "spec": "qfoldit.engine-adapter/0.1",
+  "vectors": [
+    {
+      "id": "valid-minimal-scene",
+      "input": {
+        "schema": "qfoldit.uag/0.1",
+        "scene": {"id": "v1"},
+        "nodes": [{"id": "root", "type": "group"}]
+      },
+      "expected": {"valid": true}
+    },
+    {
+      "id": "duplicate-node-id",
+      "input": {
+        "schema": "qfoldit.uag/0.1",
+        "scene": {"id": "v2"},
+        "nodes": [
+          {"id": "same", "type": "group"},
+          {"id": "same", "type": "mesh"}
+        ]
+      },
+      "expected": {"valid": false, "error_code": "DUPLICATE_NODE_ID"}
+    },
+    {
+      "id": "dangling-parent",
+      "input": {
+        "schema": "qfoldit.uag/0.1",
+        "scene": {"id": "v3"},
+        "nodes": [{"id": "child", "type": "mesh", "parent": "missing"}]
+      },
+      "expected": {"valid": false, "error_code": "DANGLING_PARENT"}
+    }
+  ]
+}
