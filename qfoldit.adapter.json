@@ -1,17 +1,9 @@
 {
   "spec": "qfoldit.engine-adapter/0.1",
-  "engine": {
-    "id": "unigine2",
-    "name": "UNIGINE 2",
-    "version": "2.20+"
-  },
-  "adapter": {
-    "id": "qfoldit-unigine-toolbelt",
-    "version": "0.2.0"
-  },
-  "contracts": {
-    "uag": "qfoldit.uag/0.1"
-  },
+  "platform": { "contract_family": "qfoldit.platform/1.0" },
+  "engine": { "id": "unigine2", "name": "UNIGINE 2", "version": "2.20+" },
+  "adapter": { "id": "qfoldit-unigine-toolbelt", "version": "0.2.0" },
+  "contracts": { "uag": "qfoldit.uag/0.1" },
   "capabilities": [
     { "id": "scene.graph", "level": "native", "status": "supported" },
     { "id": "scene.snapshot", "level": "adapter", "status": "supported" },
@@ -20,36 +12,16 @@
     { "id": "node.delete", "level": "native", "status": "supported" },
     { "id": "node.group", "level": "adapter", "status": "supported" },
     { "id": "node.parent", "level": "native", "status": "supported" },
-    {
-      "id": "geometry.procedural",
-      "level": "adapter",
-      "status": "supported",
-      "notes": "8 placement patterns (grid/circle/arc/spiral/line/wave/helix/radial) via procedural_place, plus arena_generate - real, already-working capability."
-    },
+    { "id": "geometry.procedural", "level": "adapter", "status": "supported" },
     { "id": "materials", "level": "native", "status": "supported" },
     { "id": "camera", "level": "adapter", "status": "supported" },
     { "id": "lighting", "level": "native", "status": "supported" },
     { "id": "physics", "level": "native", "status": "supported" },
-    {
-      "id": "physics.joints",
-      "level": "native",
-      "status": "partial",
-      "notes": "physics_add_joint constructs JointFixed/JointHinge/JointSlider, but exact constructor signatures were not verified against a live UNIGINE SDK (see the caveat at the top of PhysicsTools.cs) - kept honestly at 'partial' rather than claiming 'supported' for code that could not be compiled or run against the real engine. Not required by any of the 5 currently-unlocked gameplay patterns."
-    },
-    {
-      "id": "interaction",
-      "level": "adapter",
-      "status": "supported",
-      "notes": "interaction_create ensures the target has a real physics shape/body (so physics_raycast_query can detect it) and records the interaction type in a persisted, queryable JSON registry (interaction_get/interaction_list), for all 10 gameplay mechanics plus legacy triggers. Honest scope: unlike the Unity adapter's Runtime/QFoldITInteractable.cs, this does NOT wire a live click-to-callback - UNIGINE's Input/callback API needs SDK-version verification this adapter doesn't have access to (see InteractionTools.cs's header). Real, working infrastructure at the adapter level; not a live event system."
-    },
+    { "id": "physics.joints", "level": "native", "status": "partial", "notes": "Joint construction is implemented; exact constructor signatures remain a live-SDK verification target." },
+    { "id": "interaction", "level": "adapter", "status": "supported" },
     { "id": "uag.validate", "level": "adapter", "status": "supported" },
     { "id": "uag.apply", "level": "adapter", "status": "supported" },
-    {
-      "id": "scientific.visualization",
-      "level": "adapter",
-      "status": "supported",
-      "notes": "scientific_visualization_create realizes every scientific_subject/<mechanic> UAG node type as a real, visible, mechanic-differentiated primitive (shape + material preset keyed by mechanic), plus a real, persisted binding registry (scientific_binding_create/scientific_binding_get) holding the bound scientific-state:// URI as genuinely queryable data. Honest scope: unlike the Unity adapter, this does not attempt a floating 3D text label - UNIGINE's 3D text/billboard API needs SDK-version verification this adapter doesn't have access to."
-    }
+    { "id": "scientific.visualization", "level": "adapter", "status": "supported" }
   ],
   "actions": [
     { "canonical": "scene.snapshot", "support": "adapter", "tools": ["world_state_export"] },
@@ -61,5 +33,6 @@
     { "canonical": "scientific.state.bind", "support": "adapter", "tools": ["scientific_binding_create", "scientific_binding_get"] },
     { "canonical": "experience.validate", "support": "adapter", "tools": ["uag_validate"] },
     { "canonical": "experience.apply", "support": "adapter", "tools": ["uag_apply"] }
-  ]
+  ],
+  "notes": "UNIGINE is a runtime adapter for industrial and scientific visualization. Runtime realization and local interaction do not constitute scientific authority; authoritative scientific evaluation remains external."
 }
