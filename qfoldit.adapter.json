@@ -2,8 +2,8 @@
   "spec": "qfoldit.engine-adapter/0.1",
   "platform": { "contract_family": "qfoldit.platform/1.0" },
   "engine": { "id": "unigine2", "name": "UNIGINE 2", "version": "2.20+" },
-  "adapter": { "id": "qfoldit-unigine-toolbelt", "version": "0.2.0" },
-  "contracts": { "uag": "qfoldit.uag/0.1" },
+  "adapter": { "id": "qfoldit-unigine-toolbelt", "version": "0.3.0" },
+  "contracts": { "uag": "qfoldit.uag/0.1", "scientific_environment": "qfoldit.scientific-environment/1.0" },
   "capabilities": [
     { "id": "scene.graph", "level": "native", "status": "supported" },
     { "id": "scene.snapshot", "level": "adapter", "status": "supported" },
@@ -14,14 +14,22 @@
     { "id": "node.parent", "level": "native", "status": "supported" },
     { "id": "geometry.procedural", "level": "adapter", "status": "supported" },
     { "id": "materials", "level": "native", "status": "supported" },
-    { "id": "camera", "level": "adapter", "status": "supported" },
+    { "id": "camera", "level": "native", "status": "supported" },
     { "id": "lighting", "level": "native", "status": "supported" },
     { "id": "physics", "level": "native", "status": "supported" },
-    { "id": "physics.joints", "level": "native", "status": "partial", "notes": "Joint construction is implemented; exact constructor signatures remain a live-SDK verification target." },
+    { "id": "physics.joints", "level": "native", "status": "partial" },
     { "id": "interaction", "level": "adapter", "status": "supported" },
     { "id": "uag.validate", "level": "adapter", "status": "supported" },
     { "id": "uag.apply", "level": "adapter", "status": "supported" },
-    { "id": "scientific.visualization", "level": "adapter", "status": "supported" }
+    { "id": "scientific.visualization", "level": "adapter", "status": "supported" },
+    { "id": "scientific.environment.particles", "level": "adapter", "status": "partial" },
+    { "id": "scientific.environment.fluids", "level": "adapter", "status": "partial" },
+    { "id": "scientific.environment.volumetrics", "level": "adapter", "status": "partial" },
+    { "id": "scientific.environment.fields", "level": "adapter", "status": "partial" },
+    { "id": "scientific.environment.materials", "level": "adapter", "status": "supported" },
+    { "id": "experience.build_mode", "level": "adapter", "status": "supported" },
+    { "id": "experience.racing_mode", "level": "adapter", "status": "supported" },
+    { "id": "quantum.opportunity_scheduling", "level": "platform", "status": "supported" }
   ],
   "actions": [
     { "canonical": "scene.snapshot", "support": "adapter", "tools": ["world_state_export"] },
@@ -31,8 +39,10 @@
     { "canonical": "interaction.create", "support": "adapter", "tools": ["interaction_create", "interaction_get", "interaction_list"] },
     { "canonical": "scientific.visualization.create", "support": "adapter", "tools": ["scientific_visualization_create"] },
     { "canonical": "scientific.state.bind", "support": "adapter", "tools": ["scientific_binding_create", "scientific_binding_get"] },
+    { "canonical": "experience.build_mode.create", "support": "adapter", "tools": ["procedural_place"] },
+    { "canonical": "experience.racing_mode.create", "support": "adapter", "tools": ["arena_generate"] },
     { "canonical": "experience.validate", "support": "adapter", "tools": ["uag_validate"] },
     { "canonical": "experience.apply", "support": "adapter", "tools": ["uag_apply"] }
   ],
-  "notes": "UNIGINE is a runtime adapter for industrial and scientific visualization. Runtime realization and local interaction do not constitute scientific authority; authoritative scientific evaluation remains external."
+  "notes": "UNIGINE is the industrial runtime adapter. Scientific environment capabilities are contract-aligned; partial fluid/field/particle capabilities require live engine implementation and conformance evidence before being represented as fully production-ready."
 }
